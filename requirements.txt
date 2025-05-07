@@ -1,0 +1,8 @@
+streamlit==1.42.0
+pandas==2.2.3
+numpy==1.26.4
+nltk==3.9.1
+scikit-learn==1.5.1
+watchdog==3.0.0
+protobuf==4.25.3
+pyyaml==6.0.1
