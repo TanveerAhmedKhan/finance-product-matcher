@@ -448,13 +448,13 @@ st.sidebar.markdown('''
 sales_file = st.sidebar.file_uploader(
     "Upload Sales File (CSV)",
     type=["csv"],
-    help="File should contain 'Product' and 'Sales (£)' columns"
+    help="CSV file containing product names and sales data"
 )
 
 inventory_file = st.sidebar.file_uploader(
     "Upload Inventory File (CSV)",
     type=["csv"],
-    help="File should contain 'Product' and 'Inventory Units' columns"
+    help="CSV file containing product names and inventory data"
 )
 
 # Advanced settings
@@ -1097,12 +1097,79 @@ if sales_file and inventory_file:
         sales_df = pd.read_csv(sales_file)
         inventory_df = pd.read_csv(inventory_file)
 
-        # Check if required columns exist
-        if 'Product' not in sales_df.columns or 'Sales (£)' not in sales_df.columns:
-            st.error("Sales file must contain 'Product' and 'Sales (£)' columns.")
-        elif 'Product' not in inventory_df.columns or 'Inventory Units' not in inventory_df.columns:
-            st.error("Inventory file must contain 'Product' and 'Inventory Units' columns.")
-        else:
+        # Column selection for sales file
+        st.markdown('''
+        <div class="card">
+            <div class="card-header">
+                <span class="card-icon">📊</span>
+                Select Columns for Sales Data
+            </div>
+            <p>
+                Please select which columns from your sales file contain the product names and sales units.
+            </p>
+        </div>
+        ''', unsafe_allow_html=True)
+
+        col1, col2 = st.columns(2)
+        with col1:
+            sales_product_col = st.selectbox(
+                "Select Product Name Column (Sales File)",
+                options=sales_df.columns.tolist(),
+                index=sales_df.columns.tolist().index('Product') if 'Product' in sales_df.columns else 0,
+                help="Select the column that contains product names"
+            )
+
+        with col2:
+            sales_units_col = st.selectbox(
+                "Select Sales Units Column (Sales File)",
+                options=sales_df.columns.tolist(),
+                index=sales_df.columns.tolist().index('Sales (£)') if 'Sales (£)' in sales_df.columns else 0,
+                help="Select the column that contains sales units or values"
+            )
+
+        # Column selection for inventory file
+        st.markdown('''
+        <div class="card">
+            <div class="card-header">
+                <span class="card-icon">📦</span>
+                Select Columns for Inventory Data
+            </div>
+            <p>
+                Please select which columns from your inventory file contain the product names and inventory units.
+            </p>
+        </div>
+        ''', unsafe_allow_html=True)
+
+        col1, col2 = st.columns(2)
+        with col1:
+            inventory_product_col = st.selectbox(
+                "Select Product Name Column (Inventory File)",
+                options=inventory_df.columns.tolist(),
+                index=inventory_df.columns.tolist().index('Product') if 'Product' in inventory_df.columns else 0,
+                help="Select the column that contains product names"
+            )
+
+        with col2:
+            inventory_units_col = st.selectbox(
+                "Select Inventory Units Column (Inventory File)",
+                options=inventory_df.columns.tolist(),
+                index=inventory_df.columns.tolist().index('Inventory Units') if 'Inventory Units' in inventory_df.columns else 0,
+                help="Select the column that contains inventory units"
+            )
+
+        # Process button
+        if st.button("Process Files", help="Click to start processing with selected columns"):
+            # Rename columns to standardized names for processing
+            sales_df = sales_df.rename(columns={
+                sales_product_col: 'Product',
+                sales_units_col: 'Sales (£)'
+            })
+
+            inventory_df = inventory_df.rename(columns={
+                inventory_product_col: 'Product',
+                inventory_units_col: 'Inventory Units'
+            })
+
             # Process files
             loading_spinner = st.empty()
             loading_text = st.empty()
@@ -1116,147 +1183,147 @@ if sales_file and inventory_file:
                 loading_spinner.empty()
                 loading_text.empty()
 
-            # Success message
-            st.success("✅ Processing complete! Your data has been matched and standardized.")
+                # Success message
+                st.success("✅ Processing complete! Your data has been matched and standardized.")
 
-            # Display results in tabs
-            tab1, tab2 = st.tabs(["📊 Clean View", "🔍 Matching Map"])
+                # Display results in tabs
+                tab1, tab2 = st.tabs(["📊 Clean View", "🔍 Matching Map"])
 
-            with tab1:
-                st.markdown('<div class="card">', unsafe_allow_html=True)
-                st.markdown('<div class="card-header"><span class="card-icon">📊</span>Clean View</div>', unsafe_allow_html=True)
-                st.markdown('<p>This view shows your standardized product data with aggregated sales and inventory values.</p>', unsafe_allow_html=True)
+                with tab1:
+                    st.markdown('<div class="card">', unsafe_allow_html=True)
+                    st.markdown('<div class="card-header"><span class="card-icon">📊</span>Clean View</div>', unsafe_allow_html=True)
+                    st.markdown('<p>This view shows your standardized product data with aggregated sales and inventory values.</p>', unsafe_allow_html=True)
 
-                # Statistics cards
-                st.markdown('<div style="margin-bottom: 1.5rem;">', unsafe_allow_html=True)
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    st.markdown(f'''
-                    <div class="metric-container">
-                        <div class="metric-value">{len(matched_df)}</div>
-                        <div class="metric-label">Total Products</div>
-                    </div>
-                    ''', unsafe_allow_html=True)
-                with col2:
-                    st.markdown(f'''
-                    <div class="metric-container">
-                        <div class="metric-value">£{matched_df['Sales (£)'].sum():,.2f}</div>
-                        <div class="metric-label">Total Sales</div>
-                    </div>
-                    ''', unsafe_allow_html=True)
-                with col3:
-                    st.markdown(f'''
-                    <div class="metric-container">
-                        <div class="metric-value">{matched_df['Inventory Units'].sum():,.0f}</div>
-                        <div class="metric-label">Total Inventory</div>
-                    </div>
-                    ''', unsafe_allow_html=True)
-                st.markdown('</div>', unsafe_allow_html=True)
-
-                # Display dataframe with custom styling
-                st.markdown('<div class="dataframe-container">', unsafe_allow_html=True)
-                st.dataframe(
-                    matched_df.sort_values(by='Sales (£)', ascending=False),
-                    use_container_width=True
-                )
-                st.markdown('</div>', unsafe_allow_html=True)
-
-                # Download button with custom styling
-                csv_matched = matched_df.to_csv(index=False)
-                col1, col2, col3 = st.columns([1, 1, 1])
-                with col2:
-                    st.download_button(
-                        label="📥 Download Clean View",
-                        data=csv_matched,
-                        file_name="cleansheet_matched_results.csv",
-                        mime="text/csv"
-                    )
-                st.markdown('</div>', unsafe_allow_html=True)
-
-            with tab2:
-                st.markdown('<div class="card">', unsafe_allow_html=True)
-                st.markdown('<div class="card-header"><span class="card-icon">🔍</span>Matching Map</div>', unsafe_allow_html=True)
-                st.markdown('<p>This view shows how your original product names were mapped to standardized names, with confidence scores for each match.</p>', unsafe_allow_html=True)
-
-                # Filter options in a cleaner layout
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.markdown('<div style="background-color: white; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">', unsafe_allow_html=True)
-                    st.markdown('<div style="font-weight: 600; margin-bottom: 0.5rem; font-size: 0.9rem;">Filter Options</div>', unsafe_allow_html=True)
-                    show_flags = st.checkbox("Show only items flagged for review", value=False)
-                    min_conf = st.slider("Minimum confidence to display", 0.0, 1.0, 0.0, 0.1)
+                    # Statistics cards
+                    st.markdown('<div style="margin-bottom: 1.5rem;">', unsafe_allow_html=True)
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        st.markdown(f'''
+                        <div class="metric-container">
+                            <div class="metric-value">{len(matched_df)}</div>
+                            <div class="metric-label">Total Products</div>
+                        </div>
+                        ''', unsafe_allow_html=True)
+                    with col2:
+                        st.markdown(f'''
+                        <div class="metric-container">
+                            <div class="metric-value">£{matched_df['Sales (£)'].sum():,.2f}</div>
+                            <div class="metric-label">Total Sales</div>
+                        </div>
+                        ''', unsafe_allow_html=True)
+                    with col3:
+                        st.markdown(f'''
+                        <div class="metric-container">
+                            <div class="metric-value">{matched_df['Inventory Units'].sum():,.0f}</div>
+                            <div class="metric-label">Total Inventory</div>
+                        </div>
+                        ''', unsafe_allow_html=True)
                     st.markdown('</div>', unsafe_allow_html=True)
 
-                with col2:
-                    # Statistics in a card
-                    st.markdown('<div style="background-color: white; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">', unsafe_allow_html=True)
-                    st.markdown('<div style="font-weight: 600; margin-bottom: 0.5rem; font-size: 0.9rem;">Matching Statistics</div>', unsafe_allow_html=True)
-
-                    total_mappings = len(summary_df)
-                    flagged_items = len(summary_df[summary_df['Flag'] != ""])
-                    avg_conf = summary_df['Confidence'].mean()
-
-                    st.markdown(f'''
-                    <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
-                        <div>
-                            <div style="font-size: 1.2rem; font-weight: 600; color: var(--primary-color);">{total_mappings}</div>
-                            <div style="font-size: 0.8rem; color: #666;">Total Mappings</div>
-                        </div>
-                        <div>
-                            <div style="font-size: 1.2rem; font-weight: 600; color: var(--warning);">{flagged_items}</div>
-                            <div style="font-size: 0.8rem; color: #666;">Flagged Items</div>
-                        </div>
-                        <div>
-                            <div style="font-size: 1.2rem; font-weight: 600; color: var(--accent-color);">{avg_conf:.1%}</div>
-                            <div style="font-size: 0.8rem; color: #666;">Avg. Confidence</div>
-                        </div>
-                    </div>
-                    ''', unsafe_allow_html=True)
+                    # Display dataframe with custom styling
+                    st.markdown('<div class="dataframe-container">', unsafe_allow_html=True)
+                    st.dataframe(
+                        matched_df.sort_values(by='Sales (£)', ascending=False),
+                        use_container_width=True
+                    )
                     st.markdown('</div>', unsafe_allow_html=True)
 
-                # Apply filters
-                filtered_df = summary_df
-                if show_flags:
-                    filtered_df = filtered_df[filtered_df['Flag'] != ""]
-                filtered_df = filtered_df[filtered_df['Confidence'] >= min_conf]
+                    # Download button with custom styling
+                    csv_matched = matched_df.to_csv(index=False)
+                    col1, col2, col3 = st.columns([1, 1, 1])
+                    with col2:
+                        st.download_button(
+                            label="📥 Download Clean View",
+                            data=csv_matched,
+                            file_name="cleansheet_matched_results.csv",
+                            mime="text/csv"
+                        )
+                    st.markdown('</div>', unsafe_allow_html=True)
 
-                # Format confidence as percentage and add styling
-                display_df = filtered_df.copy()
+                with tab2:
+                    st.markdown('<div class="card">', unsafe_allow_html=True)
+                    st.markdown('<div class="card-header"><span class="card-icon">🔍</span>Matching Map</div>', unsafe_allow_html=True)
+                    st.markdown('<p>This view shows how your original product names were mapped to standardized names, with confidence scores for each match.</p>', unsafe_allow_html=True)
 
-                # Apply custom formatting to the dataframe
-                def format_confidence(val):
-                    if val >= 0.8:
-                        return f'<span class="high-confidence">{val:.1%}</span>'
-                    elif val >= 0.6:
-                        return f'<span class="medium-confidence">{val:.1%}</span>'
-                    else:
-                        return f'<span class="low-confidence">{val:.1%}</span>'
+                    # Filter options in a cleaner layout
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.markdown('<div style="background-color: white; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">', unsafe_allow_html=True)
+                        st.markdown('<div style="font-weight: 600; margin-bottom: 0.5rem; font-size: 0.9rem;">Filter Options</div>', unsafe_allow_html=True)
+                        show_flags = st.checkbox("Show only items flagged for review", value=False)
+                        min_conf = st.slider("Minimum confidence to display", 0.0, 1.0, 0.0, 0.1)
+                        st.markdown('</div>', unsafe_allow_html=True)
 
-                def format_flag(val):
-                    if val:
-                        return f'<span class="flag-review">{val}</span>'
-                    return ""
+                    with col2:
+                        # Statistics in a card
+                        st.markdown('<div style="background-color: white; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">', unsafe_allow_html=True)
+                        st.markdown('<div style="font-weight: 600; margin-bottom: 0.5rem; font-size: 0.9rem;">Matching Statistics</div>', unsafe_allow_html=True)
 
-                # Format for display
-                display_df['Confidence'] = display_df['Confidence'].apply(format_confidence)
-                display_df['Flag'] = display_df['Flag'].apply(format_flag)
+                        total_mappings = len(summary_df)
+                        flagged_items = len(summary_df[summary_df['Flag'] != ""])
+                        avg_conf = summary_df['Confidence'].mean()
 
-                # Display dataframe with custom styling
-                st.markdown('<div class="dataframe-container" style="margin-top: 1.5rem;">', unsafe_allow_html=True)
-                st.write(display_df.sort_values(by='Confidence', ascending=False).to_html(escape=False), unsafe_allow_html=True)
-                st.markdown('</div>', unsafe_allow_html=True)
+                        st.markdown(f'''
+                        <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
+                            <div>
+                                <div style="font-size: 1.2rem; font-weight: 600; color: var(--primary-color);">{total_mappings}</div>
+                                <div style="font-size: 0.8rem; color: #666;">Total Mappings</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 1.2rem; font-weight: 600; color: var(--warning);">{flagged_items}</div>
+                                <div style="font-size: 0.8rem; color: #666;">Flagged Items</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 1.2rem; font-weight: 600; color: var(--accent-color);">{avg_conf:.1%}</div>
+                                <div style="font-size: 0.8rem; color: #666;">Avg. Confidence</div>
+                            </div>
+                        </div>
+                        ''', unsafe_allow_html=True)
+                        st.markdown('</div>', unsafe_allow_html=True)
 
-                # Download button with custom styling
-                csv_summary = summary_df.to_csv(index=False)
-                col1, col2, col3 = st.columns([1, 1, 1])
-                with col2:
-                    st.download_button(
-                        label="📥 Download Matching Map",
-                        data=csv_summary,
-                        file_name="cleansheet_matching_map.csv",
-                        mime="text/csv"
-                    )
-                st.markdown('</div>', unsafe_allow_html=True)
+                    # Apply filters
+                    filtered_df = summary_df
+                    if show_flags:
+                        filtered_df = filtered_df[filtered_df['Flag'] != ""]
+                    filtered_df = filtered_df[filtered_df['Confidence'] >= min_conf]
+
+                    # Format confidence as percentage and add styling
+                    display_df = filtered_df.copy()
+
+                    # Apply custom formatting to the dataframe
+                    def format_confidence(val):
+                        if val >= 0.8:
+                            return f'<span class="high-confidence">{val:.1%}</span>'
+                        elif val >= 0.6:
+                            return f'<span class="medium-confidence">{val:.1%}</span>'
+                        else:
+                            return f'<span class="low-confidence">{val:.1%}</span>'
+
+                    def format_flag(val):
+                        if val:
+                            return f'<span class="flag-review">{val}</span>'
+                        return ""
+
+                    # Format for display
+                    display_df['Confidence'] = display_df['Confidence'].apply(format_confidence)
+                    display_df['Flag'] = display_df['Flag'].apply(format_flag)
+
+                    # Display dataframe with custom styling
+                    st.markdown('<div class="dataframe-container" style="margin-top: 1.5rem;">', unsafe_allow_html=True)
+                    st.write(display_df.sort_values(by='Confidence', ascending=False).to_html(escape=False), unsafe_allow_html=True)
+                    st.markdown('</div>', unsafe_allow_html=True)
+
+                    # Download button with custom styling
+                    csv_summary = summary_df.to_csv(index=False)
+                    col1, col2, col3 = st.columns([1, 1, 1])
+                    with col2:
+                        st.download_button(
+                            label="📥 Download Matching Map",
+                            data=csv_summary,
+                            file_name="cleansheet_matching_map.csv",
+                            mime="text/csv"
+                        )
+                    st.markdown('</div>', unsafe_allow_html=True)
 
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")
@@ -1283,7 +1350,7 @@ else:
             File Format Requirements
         </div>
         <p>
-            Your input files should be in CSV format with the following columns:
+            Your input files should be in CSV format. You'll be able to select which columns contain product names and values after uploading.
         </p>
     </div>
     ''', unsafe_allow_html=True)
@@ -1294,17 +1361,17 @@ else:
         st.markdown('''
         <div style="background-color: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); height: 100%;">
             <div style="font-weight: 600; color: var(--primary-color); margin-bottom: 0.75rem; display: flex; align-items: center;">
-                <span style="margin-right: 0.5rem;">📊</span> Sales File Format
+                <span style="margin-right: 0.5rem;">📊</span> Sales File Format Example
             </div>
             <div style="font-family: monospace; background-color: #f8f9fa; padding: 1rem; border-radius: 4px; font-size: 0.9rem;">
-Product,Sales (£)<br>
+Product Name,Sales Value<br>
 Samsung TV 32in S,459<br>
 Sam TV 32in,876<br>
 Samsung TV,831<br>
 Samsung TV Smart,990
             </div>
             <div style="margin-top: 0.75rem; font-size: 0.85rem; color: #666;">
-                <strong>Required columns:</strong> "Product" and "Sales (£)"
+                <strong>Note:</strong> Column names can be different - you'll select them after upload
             </div>
         </div>
         ''', unsafe_allow_html=True)
@@ -1313,17 +1380,17 @@ Samsung TV Smart,990
         st.markdown('''
         <div style="background-color: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); height: 100%;">
             <div style="font-weight: 600; color: var(--primary-color); margin-bottom: 0.75rem; display: flex; align-items: center;">
-                <span style="margin-right: 0.5rem;">📦</span> Inventory File Format
+                <span style="margin-right: 0.5rem;">📦</span> Inventory File Format Example
             </div>
             <div style="font-family: monospace; background-color: #f8f9fa; padding: 1rem; border-radius: 4px; font-size: 0.9rem;">
-Product,Inventory Units<br>
+Item,Stock<br>
 Samsung TV 32in S,91<br>
 Sam TV 32in,21<br>
 Samsung TV,42<br>
 Samsung TV Smart,42
             </div>
             <div style="margin-top: 0.75rem; font-size: 0.85rem; color: #666;">
-                <strong>Required columns:</strong> "Product" and "Inventory Units"
+                <strong>Note:</strong> Column names can be different - you'll select them after upload
             </div>
         </div>
         ''', unsafe_allow_html=True)
@@ -1408,6 +1475,7 @@ Samsung TV Smart,42
         </div>
         <ol>
             <li><strong>Upload your files</strong> - Provide your sales and inventory data in CSV format</li>
+            <li><strong>Select columns</strong> - Choose which columns contain product names and values</li>
             <li><strong>Configure settings</strong> - Adjust matching parameters to suit your data</li>
             <li><strong>Process data</strong> - Our engine tokenizes, analyzes, and groups similar products</li>
             <li><strong>Review results</strong> - Examine the clean view and matching map</li>
@@ -1415,7 +1483,8 @@ Samsung TV Smart,42
         </ol>
         <p style="margin-top: 1rem; font-style: italic; color: #666;">
             The CleanSheet Matching Engine™ uses advanced NLP techniques to identify and group similar products while respecting
-            important distinctions like size, volume, and variant information.
+            important distinctions like size, volume, and variant information. The flexible column selection feature allows you to
+            work with data from any source without reformatting.
         </p>
     </div>
     ''', unsafe_allow_html=True)
