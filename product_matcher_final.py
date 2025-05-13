@@ -1159,6 +1159,12 @@ if sales_file and inventory_file:
 
         # Process button
         if st.button("Process Files", help="Click to start processing with selected columns"):
+            # Store original column names for display
+            file1_label_col = sales_product_col
+            file1_metric_col = sales_units_col
+            file2_label_col = inventory_product_col
+            file2_metric_col = inventory_units_col
+
             # Rename columns to standardized names for processing
             sales_df = sales_df.rename(columns={
                 sales_product_col: 'Product',
@@ -1179,6 +1185,12 @@ if sales_file and inventory_file:
                 loading_text.markdown('<div style="text-align: center; margin-bottom: 2rem;">Processing your files. This may take a moment...</div>', unsafe_allow_html=True)
                 matched_df, summary_df = process_files(sales_df, inventory_df)
 
+                # Rename columns in the matched_df to use original column names
+                matched_df = matched_df.rename(columns={
+                    'Sales (£)': file1_metric_col,
+                    'Inventory Units': file2_metric_col
+                })
+
                 # Clear the loading elements after processing is complete
                 loading_spinner.empty()
                 loading_text.empty()
@@ -1192,7 +1204,7 @@ if sales_file and inventory_file:
                 with tab1:
                     st.markdown('<div class="card">', unsafe_allow_html=True)
                     st.markdown('<div class="card-header"><span class="card-icon">📊</span>Clean View</div>', unsafe_allow_html=True)
-                    st.markdown('<p>This view shows your standardized product data with aggregated sales and inventory values.</p>', unsafe_allow_html=True)
+                    st.markdown(f'<p>This view shows your standardized data with aggregated {file1_metric_col} and {file2_metric_col} values.</p>', unsafe_allow_html=True)
 
                     # Statistics cards
                     st.markdown('<div style="margin-bottom: 1.5rem;">', unsafe_allow_html=True)
@@ -1201,21 +1213,21 @@ if sales_file and inventory_file:
                         st.markdown(f'''
                         <div class="metric-container">
                             <div class="metric-value">{len(matched_df)}</div>
-                            <div class="metric-label">Total Products</div>
+                            <div class="metric-label">Total Items</div>
                         </div>
                         ''', unsafe_allow_html=True)
                     with col2:
                         st.markdown(f'''
                         <div class="metric-container">
-                            <div class="metric-value">£{matched_df['Sales (£)'].sum():,.2f}</div>
-                            <div class="metric-label">Total Sales</div>
+                            <div class="metric-value">{matched_df[file1_metric_col].sum():,.2f}</div>
+                            <div class="metric-label">Total {file1_metric_col}</div>
                         </div>
                         ''', unsafe_allow_html=True)
                     with col3:
                         st.markdown(f'''
                         <div class="metric-container">
-                            <div class="metric-value">{matched_df['Inventory Units'].sum():,.0f}</div>
-                            <div class="metric-label">Total Inventory</div>
+                            <div class="metric-value">{matched_df[file2_metric_col].sum():,.0f}</div>
+                            <div class="metric-label">Total {file2_metric_col}</div>
                         </div>
                         ''', unsafe_allow_html=True)
                     st.markdown('</div>', unsafe_allow_html=True)
@@ -1223,7 +1235,7 @@ if sales_file and inventory_file:
                     # Display dataframe with custom styling
                     st.markdown('<div class="dataframe-container">', unsafe_allow_html=True)
                     st.dataframe(
-                        matched_df.sort_values(by='Sales (£)', ascending=False),
+                        matched_df.sort_values(by=file1_metric_col, ascending=False),
                         use_container_width=True
                     )
                     st.markdown('</div>', unsafe_allow_html=True)
@@ -1235,7 +1247,7 @@ if sales_file and inventory_file:
                         st.download_button(
                             label="📥 Download Clean View",
                             data=csv_matched,
-                            file_name="cleansheet_matched_results.csv",
+                            file_name=f"cleansheet_matched_{file1_metric_col}_{file2_metric_col}.csv",
                             mime="text/csv"
                         )
                     st.markdown('</div>', unsafe_allow_html=True)
@@ -1320,7 +1332,7 @@ if sales_file and inventory_file:
                         st.download_button(
                             label="📥 Download Matching Map",
                             data=csv_summary,
-                            file_name="cleansheet_matching_map.csv",
+                            file_name=f"cleansheet_matching_map_{file1_label_col}_{file2_label_col}.csv",
                             mime="text/csv"
                         )
                     st.markdown('</div>', unsafe_allow_html=True)
