@@ -446,15 +446,15 @@ st.sidebar.markdown('''
 ''', unsafe_allow_html=True)
 
 sales_file = st.sidebar.file_uploader(
-    "Upload Sales File (CSV)",
+    "Upload File 1 (CSV)",
     type=["csv"],
-    help="CSV file containing product names and sales data"
+    help="CSV file containing labels and metric data"
 )
 
 inventory_file = st.sidebar.file_uploader(
-    "Upload Inventory File (CSV)",
+    "Upload File 2 (CSV)",
     type=["csv"],
-    help="CSV file containing product names and inventory data"
+    help="CSV file containing labels and metric data"
 )
 
 # Advanced settings
@@ -1097,15 +1097,15 @@ if sales_file and inventory_file:
         sales_df = pd.read_csv(sales_file)
         inventory_df = pd.read_csv(inventory_file)
 
-        # Column selection for sales file
+        # Column selection for file 1
         st.markdown('''
         <div class="card">
             <div class="card-header">
                 <span class="card-icon">📊</span>
-                Select Columns for Sales Data
+                File 1 — Label & Metric
             </div>
             <p>
-                Please select which columns from your sales file contain the product names and sales units.
+                Please select which columns from your first file contain the labels and metric values.
             </p>
         </div>
         ''', unsafe_allow_html=True)
@@ -1113,29 +1113,29 @@ if sales_file and inventory_file:
         col1, col2 = st.columns(2)
         with col1:
             sales_product_col = st.selectbox(
-                "Select Product Name Column (Sales File)",
+                "Select Label Column (File 1)",
                 options=sales_df.columns.tolist(),
                 index=sales_df.columns.tolist().index('Product') if 'Product' in sales_df.columns else 0,
-                help="Select the column that contains product names"
+                help="e.g. Product Name, Client, SKU, Region"
             )
 
         with col2:
             sales_units_col = st.selectbox(
-                "Select Sales Units Column (Sales File)",
+                "Select Metric Column (File 1)",
                 options=sales_df.columns.tolist(),
                 index=sales_df.columns.tolist().index('Sales (£)') if 'Sales (£)' in sales_df.columns else 0,
-                help="Select the column that contains sales units or values"
+                help="e.g. Sales, Units, Inventory, Spend"
             )
 
-        # Column selection for inventory file
+        # Column selection for file 2
         st.markdown('''
         <div class="card">
             <div class="card-header">
                 <span class="card-icon">📦</span>
-                Select Columns for Inventory Data
+                File 2 — Label & Metric
             </div>
             <p>
-                Please select which columns from your inventory file contain the product names and inventory units.
+                Please select which columns from your second file contain the labels and metric values.
             </p>
         </div>
         ''', unsafe_allow_html=True)
@@ -1143,18 +1143,18 @@ if sales_file and inventory_file:
         col1, col2 = st.columns(2)
         with col1:
             inventory_product_col = st.selectbox(
-                "Select Product Name Column (Inventory File)",
+                "Select Label Column (File 2)",
                 options=inventory_df.columns.tolist(),
                 index=inventory_df.columns.tolist().index('Product') if 'Product' in inventory_df.columns else 0,
-                help="Select the column that contains product names"
+                help="e.g. Product Name, Client, SKU, Region"
             )
 
         with col2:
             inventory_units_col = st.selectbox(
-                "Select Inventory Units Column (Inventory File)",
+                "Select Metric Column (File 2)",
                 options=inventory_df.columns.tolist(),
                 index=inventory_df.columns.tolist().index('Inventory Units') if 'Inventory Units' in inventory_df.columns else 0,
-                help="Select the column that contains inventory units"
+                help="e.g. Sales, Units, Inventory, Spend"
             )
 
         # Process button
@@ -1361,7 +1361,7 @@ else:
         st.markdown('''
         <div style="background-color: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); height: 100%;">
             <div style="font-weight: 600; color: var(--primary-color); margin-bottom: 0.75rem; display: flex; align-items: center;">
-                <span style="margin-right: 0.5rem;">📊</span> Sales File Format Example
+                <span style="margin-right: 0.5rem;">📊</span> File 1 Format Example
             </div>
             <div style="font-family: monospace; background-color: #f8f9fa; padding: 1rem; border-radius: 4px; font-size: 0.9rem;">
 Product Name,Sales Value<br>
@@ -1380,7 +1380,7 @@ Samsung TV Smart,990
         st.markdown('''
         <div style="background-color: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); height: 100%;">
             <div style="font-weight: 600; color: var(--primary-color); margin-bottom: 0.75rem; display: flex; align-items: center;">
-                <span style="margin-right: 0.5rem;">📦</span> Inventory File Format Example
+                <span style="margin-right: 0.5rem;">📦</span> File 2 Format Example
             </div>
             <div style="font-family: monospace; background-color: #f8f9fa; padding: 1rem; border-radius: 4px; font-size: 0.9rem;">
 Item,Stock<br>
@@ -1474,15 +1474,15 @@ Samsung TV Smart,42
             How It Works
         </div>
         <ol>
-            <li><strong>Upload your files</strong> - Provide your sales and inventory data in CSV format</li>
-            <li><strong>Select columns</strong> - Choose which columns contain product names and values</li>
+            <li><strong>Upload your files</strong> - Provide your data in CSV format</li>
+            <li><strong>Select columns</strong> - Choose which columns contain labels and metric values</li>
             <li><strong>Configure settings</strong> - Adjust matching parameters to suit your data</li>
-            <li><strong>Process data</strong> - Our engine tokenizes, analyzes, and groups similar products</li>
+            <li><strong>Process data</strong> - Our engine tokenizes, analyzes, and groups similar items</li>
             <li><strong>Review results</strong> - Examine the clean view and matching map</li>
-            <li><strong>Download outputs</strong> - Export the results for use in your financial systems</li>
+            <li><strong>Download outputs</strong> - Export the results for use in your systems</li>
         </ol>
         <p style="margin-top: 1rem; font-style: italic; color: #666;">
-            The CleanSheet Matching Engine™ uses advanced NLP techniques to identify and group similar products while respecting
+            The CleanSheet Matching Engine™ uses advanced NLP techniques to identify and group similar items while respecting
             important distinctions like size, volume, and variant information. The flexible column selection feature allows you to
             work with data from any source without reformatting.
         </p>
