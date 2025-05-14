@@ -92,38 +92,6 @@ Samsung TV,42
 Samsung TV Smart,42
 ```
 
-## Google Cloud Run Deployment
-
-To deploy this application to Google Cloud Run:
-
-1. Update the `PROJECT_ID` in the deployment script:
-   - For Linux/macOS: Edit `deploy-to-cloud-run.sh`
-   - For Windows: Edit `deploy-to-cloud-run.bat`
-
-2. Run the deployment script:
-   - For Linux/macOS:
-     ```bash
-     chmod +x deploy-to-cloud-run.sh
-     ./deploy-to-cloud-run.sh
-     ```
-   - For Windows:
-     ```
-     deploy-to-cloud-run.bat
-     ```
-
-3. The script will:
-   - Build the Docker image
-   - Push it to Google Container Registry
-   - Deploy it to Cloud Run
-   - Output the URL where your application is available
-
-### Prerequisites for Cloud Run Deployment
-
-- Google Cloud SDK installed and configured
-- Docker installed
-- Authenticated with Google Cloud (`gcloud auth login`)
-- Appropriate permissions on your Google Cloud project
-
 ## How It Works
 
 1. **Upload Files**: Provide your data in CSV format
