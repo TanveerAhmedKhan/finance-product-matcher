@@ -1,12 +1,15 @@
-# Product Name Matcher
+# CleanSheet Matching Engine™
 
-A backend automation tool for finance teams that cleans and merges messy product names across sales and inventory files using NLP-based matching.
+An enterprise-grade matching engine for finance teams that cleans and standardizes data across files using NLP-based matching.
 
 ## Features
 
-- **Token-based matching logic** to group similar product names (e.g., "Samsung TV 32", "32in Samsung Smart TV")
+- **Token-based matching logic** to group similar items (e.g., "Samsung TV 32", "32in Samsung Smart TV")
 - **Variant conflict protection** to prevent grouping different variants (e.g., "iPhone 13" vs "iPhone 13 Pro")
-- **Fully local operation** - no API calls or external services (for confidential finance data)
+- **Size/volume protection** to prevent grouping items with different measurements (e.g., "500ml" vs "2L")
+- **Flexible column selection** allowing you to work with any CSV file format
+- **Dynamic UI labels** that adapt to your selected column names throughout the application
+- **Fully local operation** - no API calls or external services (for confidential data)
 - **No glossary/dictionary required** - matching relies on smart rule-based NLP logic
 - **Output summary** showing original values, standardized names, confidence scores, and flags
 
@@ -44,59 +47,50 @@ This will open the application in your default web browser.
 ### Using the Application
 
 1. **Upload Files**:
-   - Upload your sales CSV file (must contain 'Product' and 'Sales (£)' columns)
-   - Upload your inventory CSV file (must contain 'Product' and 'Inventory Units' columns)
+   - Upload your first CSV file containing labels and metric data
+   - Upload your second CSV file containing labels and metric data
 
-2. **Adjust Settings** (optional):
-   - Minimum Similarity Score: Threshold for considering products similar
+2. **Select Columns**:
+   - For each file, select which column contains the labels (e.g., product names, clients, SKUs)
+   - For each file, select which column contains the metric values (e.g., sales, units, inventory)
+
+3. **Adjust Settings** (optional):
+   - Minimum Similarity Score: Threshold for considering items similar
    - Variant Protection: Enable/disable variant conflict detection
    - Size Protection: Enable/disable size conflict detection
-   - Manual Review Threshold: Confidence score below which products are flagged
+   - Manual Review Threshold: Confidence score below which items are flagged
 
-3. **View Results**:
-   - Matched Results: Shows standardized product names with aggregated sales and inventory data
-   - Matching Summary: Shows original product names, their standardized versions, confidence scores, and flags
+4. **Process Files**:
+   - Click the "Process Files" button to start the matching process
 
-4. **Download Results**:
-   - Download the matched results and summary tables as CSV files
+5. **View Results**:
+   - Clean View: Shows standardized items with aggregated metric values from both files
+   - Matching Map: Shows original items, their standardized versions, confidence scores, and flags
+
+6. **Download Results**:
+   - Download the clean view and matching map as CSV files with dynamically named files
 
 ## File Format
 
-The application expects CSV files with the following structure:
+The application accepts any CSV files. You'll be able to select which columns contain the relevant data after uploading:
 
-### Sales File
+### Example File 1
 ```
-Product,Sales (£)
+Product Name,Sales Value
 Samsung TV 32in S,459
 Sam TV 32in,876
 Samsung TV,831
 Samsung TV Smart,990
 ```
 
-### Inventory File
+### Example File 2
 ```
-Product,Inventory Units
+Item,Stock
 Samsung TV 32in S,91
 Sam TV 32in,21
 Samsung TV,42
 Samsung TV Smart,42
 ```
-
-## Docker Deployment
-
-You can run this application in a Docker container:
-
-1. Build the Docker image:
-```bash
-docker build -t product-name-matcher .
-```
-
-2. Run the container:
-```bash
-docker run -p 8080:8080 product-name-matcher
-```
-
-3. Access the application at http://localhost:8080
 
 ## Google Cloud Run Deployment
 
@@ -132,12 +126,14 @@ To deploy this application to Google Cloud Run:
 
 ## How It Works
 
-1. **Tokenization**: Product names are broken down into meaningful tokens
-2. **Similarity Calculation**: Token-based similarity is calculated between products
-3. **Conflict Detection**: Variant and size conflicts are detected to prevent incorrect grouping
-4. **Standardization**: Similar products are grouped and given standardized names
-5. **Confidence Scoring**: Each match is given a confidence score
-6. **Aggregation**: Sales and inventory data are aggregated by standardized product names
+1. **Upload Files**: Provide your data in CSV format
+2. **Select Columns**: Choose which columns contain labels and metric values
+3. **Configure Settings**: Adjust matching parameters to suit your data
+4. **Process Data**: Our engine tokenizes, analyzes, and groups similar items
+5. **Review Results**: Examine the clean view and matching map
+6. **Download Outputs**: Export the results for use in your systems
+
+The CleanSheet Matching Engine™ uses advanced NLP techniques to identify and group similar items while respecting important distinctions like size, volume, and variant information. The flexible column selection feature allows you to work with data from any source without reformatting.
 
 ## License
 
